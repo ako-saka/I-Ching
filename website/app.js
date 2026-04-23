@@ -8,19 +8,24 @@ const questionDisplay = document.getElementById("question-display");
 const beginButton = document.getElementById("begin-button");
 const resetButton = document.getElementById("reset-button");
 const backButton = document.getElementById("back-button");
-const lineGuides = document.getElementById("line-guides");
 const hexagramLines = document.getElementById("hexagram-lines");
 const castOverlay = document.getElementById("cast-overlay");
 const castCoins = Array.from(document.querySelectorAll(".cast-coin"));
 const castResult = document.getElementById("cast-result");
 const starsContainer = document.getElementById("stars");
 const orbsContainer = document.getElementById("orbs");
+const readingResult = document.getElementById("reading-result");
+const readingTitle = document.getElementById("reading-title");
+const readingCode = document.getElementById("reading-code");
+const readingBody = document.getElementById("reading-body");
+const scrollTip = document.getElementById("scroll-tip");
 
 const state = {
   question: "",
   lineData: [],
   revealed: Array(LINE_COUNT).fill(false),
   animatingIndex: -1,
+  readingRequestId: 0,
 };
 
 function randomBool() {
@@ -38,6 +43,7 @@ function createHexagram() {
   });
   state.revealed = Array(LINE_COUNT).fill(false);
   state.animatingIndex = -1;
+  state.readingRequestId += 1;
 }
 
 function buildAtmosphere() {
@@ -67,19 +73,6 @@ function lineTop(index) {
   return 360 - index * 72;
 }
 
-function renderGuides() {
-  lineGuides.innerHTML = Array.from({ length: LINE_COUNT }, (_, index) => {
-    const top = lineTop(index);
-    return `
-      <div class="line-slot" style="top:${top}px;">
-        <span class="guide-label">${index + 1}</span>
-        <span class="guide-line left"></span>
-        <span class="guide-line right"></span>
-      </div>
-    `;
-  }).join("");
-}
-
 function renderLines() {
   hexagramLines.innerHTML = state.lineData.map((line, index) => {
     const top = lineTop(index);
@@ -87,12 +80,18 @@ function renderLines() {
       ? `<div class="line-reveal ${line.isSolid ? "solid" : "broken"}" aria-label="${line.isSolid ? "Yang" : "Yin"} line"></div>`
       : `<button class="seal-button" type="button" data-line-index="${index}" aria-label="Cast line ${index + 1}" ${state.animatingIndex !== -1 ? "disabled" : ""}></button>`;
 
-    return `<div class="line-slot" style="top:${top}px;">${content}</div>`;
+    return `
+      <div class="line-slot" style="top:${top}px;">
+        <span class="guide-label">${index + 1}</span>
+        <span class="guide-line"></span>
+        ${content}
+        <span class="guide-line"></span>
+      </div>
+    `;
   }).join("");
 }
 
 function renderAll() {
-  renderGuides();
   renderLines();
 }
 
@@ -116,12 +115,60 @@ function returnToLanding() {
   state.question = "";
   castOverlay.classList.add("hidden");
   state.animatingIndex = -1;
+  setReadingPlaceholder("Your reading will appear here after the casting is complete.");
   showLandingPage();
 }
 
 function castLabel(cast) {
   const heads = cast.filter(Boolean).length;
   return `${heads} heads -> ${heads >= 2 ? "yang line" : "yin line"}`;
+}
+
+function getHexagramCode() {
+  return state.lineData.map((line) => (line.isSolid ? "1" : "0")).join("");
+}
+
+function setReadingPlaceholder(message) {
+  readingResult.classList.add("hidden");
+  scrollTip.classList.add("hidden");
+  readingTitle.textContent = "Reveal all six lines to read the hexagram.";
+  readingCode.textContent = "";
+  readingBody.textContent = message;
+}
+
+async function loadReading() {
+  const code = getHexagramCode();
+  const requestId = state.readingRequestId;
+
+  readingResult.classList.remove("hidden");
+  scrollTip.classList.remove("hidden");
+  readingTitle.textContent = "Loading hexagram reading...";
+  readingCode.textContent = `Code ${code}`;
+  readingBody.textContent = "Opening the matched reading...";
+
+  try {
+    const text = window.ICHING_READINGS?.[code];
+    if (!text) {
+      throw new Error("Reading not found in bundled data");
+    }
+    if (requestId !== state.readingRequestId) {
+      return;
+    }
+
+    const lines = text.trim().split("\n");
+    const titleLine = lines[1]?.trim() || `Hexagram ${code}`;
+    readingCode.textContent = `Code ${code}`;
+    readingTitle.textContent = titleLine;
+    readingBody.textContent = lines.slice(2).join("\n").trim() || "The reading file is empty.";
+  } catch (error) {
+    if (requestId !== state.readingRequestId) {
+      return;
+    }
+
+    readingTitle.textContent = "Unable to load the reading";
+    readingCode.textContent = `Code ${code}`;
+    readingBody.textContent = "The bundled reading data did not include this hexagram code.";
+  }
 }
 
 function setCoinFace(coin, isHeads) {
@@ -154,6 +201,9 @@ function playCastAnimation(index) {
     state.animatingIndex = -1;
     castOverlay.classList.add("hidden");
     renderLines();
+    if (state.revealed.every(Boolean)) {
+      loadReading();
+    }
   }, ANIMATION_MS);
 }
 
@@ -168,6 +218,7 @@ function beginCasting() {
   questionDisplay.textContent = question;
   createHexagram();
   renderAll();
+  setReadingPlaceholder("Your reading will appear here after the casting is complete.");
   showReadingPage();
 }
 
@@ -175,6 +226,7 @@ function resetHexagram() {
   createHexagram();
   castOverlay.classList.add("hidden");
   renderAll();
+  setReadingPlaceholder("Your reading will appear here after the casting is complete.");
 }
 
 beginButton.addEventListener("click", beginCasting);
@@ -210,4 +262,5 @@ document.addEventListener("keydown", (event) => {
 buildAtmosphere();
 createHexagram();
 renderAll();
+setReadingPlaceholder("Your reading will appear here after the casting is complete.");
 questionInput.focus();

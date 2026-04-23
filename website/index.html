@@ -56,7 +56,6 @@
           <p class="casting-helper">Click each seal to cast a line. Two or three heads create a solid yang line.</p>
 
           <div class="hexagram-stage">
-            <div class="line-guides" id="line-guides"></div>
             <div class="hexagram-lines" id="hexagram-lines"></div>
           </div>
 
@@ -75,10 +74,20 @@
           <button class="secondary-button" id="reset-button">Generate New Hexagram</button>
           <button class="ghost-button" id="back-button">Ask Another Question</button>
         </div>
+
+        <p class="scroll-tip hidden" id="scroll-tip">Hexagram complete. Scroll down to read the matched interpretation.</p>
+
+        <section class="panel reading-result hidden" id="reading-result" aria-live="polite">
+          <p class="eyebrow">Matched Hexagram</p>
+          <h3 id="reading-title">Reveal all six lines to read the hexagram.</h3>
+          <p class="reading-code" id="reading-code"></p>
+          <pre class="reading-body" id="reading-body">Your reading will appear here after the casting is complete.</pre>
+        </section>
       </section>
     </main>
   </div>
 
+  <script src="readings-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
