@@ -2,6 +2,7 @@ import ssl
 import re
 import urllib.request
 from html.parser import HTMLParser
+from pathlib import Path
 
 class MRGParser(HTMLParser):
     def __init__(self):
@@ -92,7 +93,9 @@ def fetch_hexagram(code, ctx, headers):
 if __name__ == '__main__':
     ctx = ssl._create_unverified_context()
     headers = {'User-Agent': 'Mozilla/5.0'}
-    out_path = 'iching_hexagrams_texts.txt'
+    readings_dir = Path('readings')
+    readings_dir.mkdir(exist_ok=True)
+    out_path = readings_dir / 'iching_hexagrams_texts.txt'
     with open(out_path, 'w', encoding='utf-8') as out_file:
         for i in range(64):
             code = format(i, '06b')

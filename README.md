@@ -2,12 +2,15 @@
 
 An interactive I Ching hexagram generator built with pygame. Users enter a question, then reveal a randomly generated hexagram one line at a time with coin flip animations.
 
+The original `pygame` prototype is preserved as-is, and a separate website version now lives in `website/`.
+
 ## Features
 
 - **Landing page** - Enter your question before consulting the I Ching
 - **Interactive hexagram** - Click circles to reveal lines with coin flip animations
 - **Solid and broken lines** - Randomly generated Yang (solid) and Yin (broken) lines
 - **Beautiful UI** - Clean, aesthetic interface with smooth animations
+- **Organized readings** - Hexagram text files live under `readings/`
 
 ## Requirements
 
@@ -35,6 +38,52 @@ An interactive I Ching hexagram generator built with pygame. Users enter a quest
 python test.py
 ```
 
+## Project Structure
+
+- `test.py` - Main pygame prototype
+- `fetch_hexagrams.py` - Script to build the combined reading export
+- `readings/` - Individual hexagram readings plus `iching_hexagrams_texts.txt`
+- `website/` - Standalone browser version of the prototype
+
+## Website Version
+
+The web port is intentionally separate from the Python prototype so the current desktop version remains untouched.
+
+### Files
+
+- `website/index.html` - Web page structure for the landing screen and casting screen
+- `website/style.css` - Visual system, animated background, responsive layout, and coin/line styling
+- `website/app.js` - Browser state management, random hexagram generation, and three-coin casting animation logic
+
+### What Changed In The Website
+
+- Copied the current two-page flow into a browser-based version instead of replacing `test.py`
+- Recreated the atmospheric scene with a gradient sky, moon glow, stars, drifting orbs, mountain layers, and mist
+- Added a dedicated landing page with the same question-first interaction as the Python app
+- Ported the six-line reveal flow so each line is cast one at a time
+- Rebuilt the three-coin toss animation in HTML/CSS/JavaScript for each line reveal
+- Preserved the yin/yang rule from the prototype: two or three heads become a solid yang line
+- Added browser buttons for `Generate New Hexagram` and `Ask Another Question`
+- Preserved the `R` keyboard shortcut behavior to return to the landing page
+- Added responsive styling so the website works on desktop and mobile widths
+- Added a reduced-motion fallback for people who prefer less animation
+
+### Running The Website
+
+Open `website/index.html` in a browser for a quick local preview.
+
+For the most reliable local setup, serve the project root and open the site in a browser:
+
+```bash
+python -m http.server
+```
+
+Then visit:
+
+```text
+http://localhost:8000/website/
+```
+
 ## Usage
 
 1. **Landing Page**: Type your question about life, decisions, or situations
@@ -55,3 +104,4 @@ python test.py
 - Built with pygame for graphics and event handling
 - Uses frame-based animation for smooth coin flip effects
 - Two-page interface with state management (landing page and hexagram page)
+- Browser port uses plain HTML, CSS, and JavaScript with no framework dependency

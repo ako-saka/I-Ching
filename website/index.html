@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I Ching Web Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="sky-glow sky-glow-one"></div>
+    <div class="sky-glow sky-glow-two"></div>
+    <div class="moon-halo"></div>
+    <div class="moon"></div>
+    <div class="stars" id="stars"></div>
+    <div class="orbs" id="orbs"></div>
+
+    <div class="mountains mountains-far"></div>
+    <div class="mountains mountains-mid"></div>
+    <div class="mountains mountains-near"></div>
+    <div class="mist-layer mist-layer-one"></div>
+    <div class="mist-layer mist-layer-two"></div>
+
+    <main class="app">
+      <section class="page page-landing active" id="landing-page">
+        <div class="panel hero-panel">
+          <p class="eyebrow">An animated divination prototype</p>
+          <h1>Cast the I Ching</h1>
+          <p class="subtitle">Ask a question and reveal your hexagram through a three-coin toss.</p>
+          <label class="question-label" for="question-input">Type your question below to begin.</label>
+
+          <div class="question-box">
+            <input id="question-input" type="text" maxlength="100" placeholder="Should I follow this path?" autocomplete="off">
+          </div>
+
+          <button class="primary-button" id="begin-button">Begin the casting</button>
+
+          <div class="landing-preview" aria-hidden="true">
+            <div class="preview-coin coin heads"></div>
+            <div class="preview-coin coin tails"></div>
+            <div class="preview-coin coin heads"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page-reading" id="reading-page" aria-hidden="true">
+        <div class="panel question-panel">
+          <p class="eyebrow">Your question</p>
+          <h2 id="question-display">Should I follow this path?</h2>
+        </div>
+
+        <div class="panel casting-panel">
+          <p class="casting-helper">Click each seal to cast a line. Two or three heads create a solid yang line.</p>
+
+          <div class="hexagram-stage">
+            <div class="line-guides" id="line-guides"></div>
+            <div class="hexagram-lines" id="hexagram-lines"></div>
+          </div>
+
+          <div class="cast-overlay hidden" id="cast-overlay" aria-live="polite">
+            <p class="cast-title">Coin casting in motion</p>
+            <div class="cast-coins" id="cast-coins">
+              <div class="coin cast-coin"></div>
+              <div class="coin cast-coin"></div>
+              <div class="coin cast-coin"></div>
+            </div>
+            <p class="cast-result" id="cast-result"></p>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="secondary-button" id="reset-button">Generate New Hexagram</button>
+          <button class="ghost-button" id="back-button">Ask Another Question</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
