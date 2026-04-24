@@ -2,7 +2,7 @@
 
 An interactive I Ching hexagram generator built with pygame. Users enter a question, then reveal a randomly generated hexagram one line at a time with coin flip animations.
 
-The original `pygame` prototype is preserved as-is, and a separate website version now lives in `website/`.
+The original `pygame` prototype is preserved as-is, and the website now uses a root `index.html` entry point with supporting assets in `website/`.
 
 ## Features
 
@@ -43,7 +43,8 @@ python test.py
 - `test.py` - Main pygame prototype
 - `fetch_hexagrams.py` - Script to build the combined reading export
 - `readings/` - Individual hexagram readings plus `iching_hexagrams_texts.txt`
-- `website/` - Standalone browser version of the prototype
+- `index.html` - Main website entry point
+- `website/` - Website assets, scripts, styles, and bundled reading data
 
 ## Website Version
 
@@ -51,9 +52,10 @@ The web port is intentionally separate from the Python prototype so the current 
 
 ### Files
 
-- `website/index.html` - Web page structure for the landing screen and casting screen
+- `index.html` - Web page structure for the landing screen and casting screen
 - `website/style.css` - Visual system, animated background, responsive layout, and coin/line styling
 - `website/app.js` - Browser state management, random hexagram generation, and three-coin casting animation logic
+- `website/readings-data.js` - Bundled hexagram readings for standalone browser loading
 
 ### What Changed In The Website
 
@@ -70,7 +72,7 @@ The web port is intentionally separate from the Python prototype so the current 
 
 ### Running The Website
 
-Open `website/index.html` in a browser for a quick local preview.
+Open `index.html` in a browser for a quick local preview.
 
 For the most reliable local setup, serve the project root and open the site in a browser:
 
@@ -81,7 +83,7 @@ python -m http.server
 Then visit:
 
 ```text
-http://localhost:8000/website/
+http://localhost:8000/
 ```
 
 ## Usage
