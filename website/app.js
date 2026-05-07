@@ -223,6 +223,28 @@ function setCoinFace(coin, isHeads) {
   coin.dataset.face = isHeads ? "H" : "T";
 }
 
+function resetCastCoins() {
+  castCoins.forEach((coin) => {
+    coin.parentElement.classList.remove("active", "animate");
+    coin.classList.remove("animate", "heads", "tails");
+    coin.style.animationDelay = "";
+  });
+}
+
+function animateCastCoins(count, cast) {
+  resetCastCoins();
+
+  castCoins.slice(0, count).forEach((coin, coinIndex) => {
+    const face = cast[coinIndex % cast.length];
+    coin.parentElement.classList.add("active");
+    coin.style.animationDelay = `${coinIndex * 90}ms`;
+    setCoinFace(coin, face);
+    void coin.offsetWidth;
+    coin.parentElement.classList.add("animate");
+    coin.classList.add("animate");
+  });
+}
+
 function playCastAnimation(index) {
   const requestId = state.animationRequestId + 1;
   state.animationRequestId = requestId;
@@ -234,15 +256,7 @@ function playCastAnimation(index) {
   castResult.textContent = "";
 
   const cast = state.lineData[index].cast;
-  castCoins.forEach((coin, coinIndex) => {
-    coin.parentElement.classList.remove("animate");
-    coin.classList.remove("animate", "heads", "tails");
-    coin.style.animationDelay = `${coinIndex * 110}ms`;
-    setCoinFace(coin, cast[coinIndex]);
-    void coin.offsetWidth;
-    coin.parentElement.classList.add("animate");
-    coin.classList.add("animate");
-  });
+  animateCastCoins(1, cast);
 
   window.setTimeout(() => {
     if (requestId !== state.animationRequestId) {
@@ -272,15 +286,7 @@ function playCastAllAnimation() {
   castResult.textContent = "";
 
   const previewLine = state.lineData.find((line, index) => !state.revealed[index]) || state.lineData[0];
-  castCoins.forEach((coin, coinIndex) => {
-    coin.parentElement.classList.remove("animate");
-    coin.classList.remove("animate", "heads", "tails");
-    coin.style.animationDelay = `${coinIndex * 110}ms`;
-    setCoinFace(coin, previewLine.cast[coinIndex]);
-    void coin.offsetWidth;
-    coin.parentElement.classList.add("animate");
-    coin.classList.add("animate");
-  });
+  animateCastCoins(6, previewLine.cast);
 
   window.setTimeout(() => {
     if (requestId !== state.animationRequestId) {
