@@ -235,10 +235,12 @@ function playCastAnimation(index) {
 
   const cast = state.lineData[index].cast;
   castCoins.forEach((coin, coinIndex) => {
+    coin.parentElement.classList.remove("animate");
     coin.classList.remove("animate", "heads", "tails");
     coin.style.animationDelay = `${coinIndex * 110}ms`;
     setCoinFace(coin, cast[coinIndex]);
     void coin.offsetWidth;
+    coin.parentElement.classList.add("animate");
     coin.classList.add("animate");
   });
 
@@ -271,10 +273,12 @@ function playCastAllAnimation() {
 
   const previewLine = state.lineData.find((line, index) => !state.revealed[index]) || state.lineData[0];
   castCoins.forEach((coin, coinIndex) => {
+    coin.parentElement.classList.remove("animate");
     coin.classList.remove("animate", "heads", "tails");
     coin.style.animationDelay = `${coinIndex * 110}ms`;
     setCoinFace(coin, previewLine.cast[coinIndex]);
     void coin.offsetWidth;
+    coin.parentElement.classList.add("animate");
     coin.classList.add("animate");
   });
 
