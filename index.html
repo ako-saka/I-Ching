@@ -53,7 +53,10 @@
         </div>
 
         <div class="panel casting-panel">
-          <p class="casting-helper">Click each seal to cast a line. Two or three heads create a solid yang line.</p>
+          <p class="casting-helper">Click each seal to cast a line one by one, or throw every remaining line at once.</p>
+          <div class="casting-actions">
+            <button class="secondary-button" id="cast-all-button" type="button">Throw All Coins</button>
+          </div>
 
           <div class="hexagram-stage">
             <div class="hexagram-lines" id="hexagram-lines"></div>
@@ -65,6 +68,14 @@
               <div class="coin cast-coin"></div>
               <div class="coin cast-coin"></div>
               <div class="coin cast-coin"></div>
+            </div>
+            <div class="casting-sparks" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
             <p class="cast-result" id="cast-result"></p>
           </div>

@@ -6,6 +6,7 @@ const readingPage = document.getElementById("reading-page");
 const questionInput = document.getElementById("question-input");
 const questionDisplay = document.getElementById("question-display");
 const beginButton = document.getElementById("begin-button");
+const castAllButton = document.getElementById("cast-all-button");
 const resetButton = document.getElementById("reset-button");
 const backButton = document.getElementById("back-button");
 const hexagramLines = document.getElementById("hexagram-lines");
@@ -24,8 +25,10 @@ const state = {
   question: "",
   lineData: [],
   revealed: Array(LINE_COUNT).fill(false),
+  revealedNow: Array(LINE_COUNT).fill(false),
   animatingIndex: -1,
   readingRequestId: 0,
+  animationRequestId: 0,
 };
 
 function randomBool() {
@@ -42,8 +45,10 @@ function createHexagram() {
     };
   });
   state.revealed = Array(LINE_COUNT).fill(false);
+  state.revealedNow = Array(LINE_COUNT).fill(false);
   state.animatingIndex = -1;
   state.readingRequestId += 1;
+  state.animationRequestId += 1;
 }
 
 function buildAtmosphere() {
@@ -76,12 +81,18 @@ function lineTop(index) {
 function renderLines() {
   hexagramLines.innerHTML = state.lineData.map((line, index) => {
     const top = lineTop(index);
+    const slotClasses = [
+      "line-slot",
+      state.revealed[index] ? "is-revealed" : "",
+      state.revealedNow[index] ? "just-revealed" : "",
+      state.revealed.every(Boolean) ? "hexagram-complete" : "",
+    ].filter(Boolean).join(" ");
     const content = state.revealed[index]
       ? `<div class="line-reveal ${line.isSolid ? "solid" : "broken"}" aria-label="${line.isSolid ? "Yang" : "Yin"} line"></div>`
       : `<button class="seal-button" type="button" data-line-index="${index}" aria-label="Cast line ${index + 1}" ${state.animatingIndex !== -1 ? "disabled" : ""}></button>`;
 
     return `
-      <div class="line-slot" style="top:${top}px;">
+      <div class="${slotClasses}" style="top:${top}px;">
         <span class="guide-label">${index + 1}</span>
         <span class="guide-line"></span>
         ${content}
@@ -93,6 +104,13 @@ function renderLines() {
 
 function renderAll() {
   renderLines();
+  updateCastAllButton();
+}
+
+function updateCastAllButton() {
+  const isBusy = state.animatingIndex !== -1;
+  const isComplete = state.revealed.every(Boolean);
+  castAllButton.disabled = isBusy || isComplete;
 }
 
 function showReadingPage() {
@@ -114,7 +132,9 @@ function returnToLanding() {
   questionInput.value = "";
   state.question = "";
   castOverlay.classList.add("hidden");
+  castOverlay.classList.remove("casting-all");
   state.animatingIndex = -1;
+  state.animationRequestId += 1;
   setReadingPlaceholder("Your reading will appear here after the casting is complete.");
   showLandingPage();
 }
@@ -134,6 +154,32 @@ function setReadingPlaceholder(message) {
   readingTitle.textContent = "Reveal all six lines to read the hexagram.";
   readingCode.textContent = "";
   readingBody.textContent = message;
+}
+
+function completeLine(index, requestId) {
+  if (requestId !== state.animationRequestId) {
+    return;
+  }
+
+  state.revealedNow = Array(LINE_COUNT).fill(false);
+  state.revealed[index] = true;
+  state.revealedNow[index] = true;
+  state.animatingIndex = -1;
+  castOverlay.classList.add("hidden");
+  castOverlay.classList.remove("casting-all");
+  renderAll();
+  if (state.revealed.every(Boolean)) {
+    loadReading();
+  }
+
+  window.setTimeout(() => {
+    if (requestId !== state.animationRequestId) {
+      return;
+    }
+
+    state.revealedNow[index] = false;
+    renderAll();
+  }, 900);
 }
 
 async function loadReading() {
@@ -178,9 +224,13 @@ function setCoinFace(coin, isHeads) {
 }
 
 function playCastAnimation(index) {
+  const requestId = state.animationRequestId + 1;
+  state.animationRequestId = requestId;
   state.animatingIndex = index;
-  renderLines();
+  renderAll();
   castOverlay.classList.remove("hidden");
+  castOverlay.classList.remove("casting-all");
+  castOverlay.querySelector(".cast-title").textContent = "Coin casting in motion";
   castResult.textContent = "";
 
   const cast = state.lineData[index].cast;
@@ -193,17 +243,71 @@ function playCastAnimation(index) {
   });
 
   window.setTimeout(() => {
+    if (requestId !== state.animationRequestId) {
+      return;
+    }
+
     castResult.textContent = castLabel(cast);
   }, 900);
 
   window.setTimeout(() => {
-    state.revealed[index] = true;
+    completeLine(index, requestId);
+  }, ANIMATION_MS);
+}
+
+function playCastAllAnimation() {
+  if (state.animatingIndex !== -1 || state.revealed.every(Boolean)) {
+    return;
+  }
+
+  const requestId = state.animationRequestId + 1;
+  state.animationRequestId = requestId;
+  state.animatingIndex = -2;
+  renderAll();
+  castOverlay.classList.remove("hidden");
+  castOverlay.classList.add("casting-all");
+  castOverlay.querySelector(".cast-title").textContent = "Throwing all coins";
+  castResult.textContent = "";
+
+  const previewLine = state.lineData.find((line, index) => !state.revealed[index]) || state.lineData[0];
+  castCoins.forEach((coin, coinIndex) => {
+    coin.classList.remove("animate", "heads", "tails");
+    coin.style.animationDelay = `${coinIndex * 110}ms`;
+    setCoinFace(coin, previewLine.cast[coinIndex]);
+    void coin.offsetWidth;
+    coin.classList.add("animate");
+  });
+
+  window.setTimeout(() => {
+    if (requestId !== state.animationRequestId) {
+      return;
+    }
+
+    const remainingCount = state.revealed.filter((isRevealed) => !isRevealed).length;
+    castResult.textContent = `${remainingCount} ${remainingCount === 1 ? "line" : "lines"} cast`;
+  }, 900);
+
+  window.setTimeout(() => {
+    if (requestId !== state.animationRequestId) {
+      return;
+    }
+
+    state.revealedNow = state.revealed.map((isRevealed) => !isRevealed);
+    state.revealed = Array(LINE_COUNT).fill(true);
     state.animatingIndex = -1;
     castOverlay.classList.add("hidden");
-    renderLines();
-    if (state.revealed.every(Boolean)) {
-      loadReading();
-    }
+    castOverlay.classList.remove("casting-all");
+    renderAll();
+    loadReading();
+
+    window.setTimeout(() => {
+      if (requestId !== state.animationRequestId) {
+        return;
+      }
+
+      state.revealedNow = Array(LINE_COUNT).fill(false);
+      renderAll();
+    }, 1600);
   }, ANIMATION_MS);
 }
 
@@ -225,11 +329,13 @@ function beginCasting() {
 function resetHexagram() {
   createHexagram();
   castOverlay.classList.add("hidden");
+  castOverlay.classList.remove("casting-all");
   renderAll();
   setReadingPlaceholder("Your reading will appear here after the casting is complete.");
 }
 
 beginButton.addEventListener("click", beginCasting);
+castAllButton.addEventListener("click", playCastAllAnimation);
 questionInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     beginCasting();
